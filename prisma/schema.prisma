@@ -1,14 +1,12 @@
-// Configura la generación del cliente de TypeScript
 generator client {
   provider = "prisma-client-js"
 }
 
-// Configura la conexión a la base de datos
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// --- TUS MODELOS (Mantenlos igual abajo) ---
 model User {
   id       String @id @default(uuid())
   name     String
@@ -19,26 +17,26 @@ model User {
 model Category {
   id        String     @id @default(uuid())
   name      String
-  parentId  String?    
+  parentId  String?
+  updatedAt DateTime   @updatedAt
   parent    Category?  @relation("SubCategories", fields: [parentId], references: [id])
   children  Category[] @relation("SubCategories")
-  updatedAt DateTime   @updatedAt
   products  Product[]
 }
 
 model Product {
-  id             String   @id @default(uuid())
-  name           String
-  productNumber  String   @unique
-  color          String
-  standardPrice  Float    
-  listPrice      Float
-  size           String
-  weight         String
-  categoryId     String
-  category       Category @relation(fields: [categoryId], references: [id])
-  saleStartDate  DateTime @default(now())
-  saleEndDate    DateTime?
-  status         String   
-  createdAt      DateTime @default(now())
+  id            String    @id @default(uuid())
+  name          String
+  productNumber String    @unique
+  color         String
+  standardPrice Float
+  listPrice     Float
+  size          String
+  weight        String
+  categoryId    String
+  saleStartDate DateTime  @default(now())
+  saleEndDate   DateTime?
+  status        String
+  createdAt     DateTime  @default(now())
+  category      Category  @relation(fields: [categoryId], references: [id])
 }
