@@ -8,7 +8,7 @@ async function bootstrap() {
   // Configuración para evitar bloqueos de seguridad del navegador
   app.enableCors({
     origin: 'http://localhost:3000',
-    methods: 'GET,POST,PUT,DELETE,OPTIONS',
+    methods: 'GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS',
     credentials: true,
   });
 
