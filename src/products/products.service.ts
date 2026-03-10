@@ -1,30 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { CreateProductDto } from './dto/create-product.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createProductDto: CreateProductDto) {
-    // Usamos await para que el método sea genuinamente asíncrono
-    return await this.prisma.product.create({
-      data: {
-        ...createProductDto,
-        // Conversión manual obligatoria para que Prisma no falle
-        saleStartDate: new Date(createProductDto.saleStartDate),
-        saleEndDate: createProductDto.saleEndDate
-          ? new Date(createProductDto.saleEndDate)
-          : null,
-      },
+  async findAll(search?: string) {
+    return this.prisma.product.findMany({
+      where: search ? {
+        name: { contains: search, mode: 'insensitive' }
+      } : {},
+      include: {
+        category: true // Trae la info de la categoría de DBeaver
+      }
     });
   }
 
-  async findAll() {
-    return await this.prisma.product.findMany({
-      include: {
-        category: true,
-      },
+  async findOne(id: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: id }
     });
+
+    if (!product) {
+      throw new NotFoundException(`Producto ${id} no encontrado`);
+    }
+    return product;
   }
+
+  // Métodos extra para que no te de error el controller
+  async create(data: any) { return this.prisma.product.create({ data }); }
+  async update(id: string, data: any) { return this.prisma.product.update({ where: { id }, data }); }
+  async remove(id: string) { return this.prisma.product.delete({ where: { id } }); }
 }
