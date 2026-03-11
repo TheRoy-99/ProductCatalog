@@ -2,25 +2,37 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { JwtService } from '@nestjs/jwt'; // <-- Importamos para el token
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  // Inyectamos el servicio de Prisma y el de JWT
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService, 
+  ) {}
 
   async login(loginDto: LoginDto) {
-    // Buscamos el usuario en la tabla User de PostgreSQL
+    // 1. Buscamos el usuario igual que antes
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email.toLowerCase() },
     });
 
-    // Si no existe o la clave no coincide, lanzamos error 401
+    // 2. Mantenemos la validación de seguridad de tu compañero
     if (!user || user.password !== loginDto.password) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // Quitamos el password del objeto antes de enviarlo al front por seguridad
+    // 3. Quitamos el password por seguridad (como lo tenía tu compañero)
     const { password, ...result } = user;
-    return result;
+
+    // 4. CREAMOS EL TOKEN (Esto es lo que permite que tu tarea funcione)
+    const payload = { sub: user.id, email: user.email };
+    
+    return {
+      ...result, // Aquí devolvemos el id, name y email (Lo de tu compañero)
+      access_token: await this.jwtService.signAsync(payload), // El token (Lo tuyo)
+    };
   }
   
   async register(registerDto: RegisterDto) {
@@ -33,7 +45,7 @@ export class AuthService {
       throw new UnauthorizedException('El email ya esta registrado');
     }
 
-    // Creamos el nuevo usuario
+    // Creamos el nuevo usuario con Prisma
     const newUser = await this.prisma.user.create({
       data: {
         name: registerDto.name,
@@ -42,7 +54,6 @@ export class AuthService {
       },
     });
 
-    // Quitamos el password del objeto antes de enviarlo al front por seguridad
     const { password, ...result } = newUser;
     return result;
   }
