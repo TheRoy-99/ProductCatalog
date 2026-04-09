@@ -6,16 +6,22 @@ import { CreateProductDto } from './dto/create-product.dto';
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createProductDto: CreateProductDto) {
-    // Usamos await para que el método sea genuinamente asíncrono
+  async create(data: any) {
     return await this.prisma.product.create({
       data: {
-        ...createProductDto,
-        // Conversión manual obligatoria para que Prisma no falle
-        saleStartDate: new Date(createProductDto.saleStartDate),
-        saleEndDate: createProductDto.saleEndDate
-          ? new Date(createProductDto.saleEndDate)
-          : null,
+        name: data.name,
+        productNumber: data.productNumber,
+        color: data.color,
+        // Convertimos a número por seguridad
+        standardPrice: Number(data.standardPrice),
+        listPrice: Number(data.listPrice),
+        size: data.size,
+        weight: data.weight,
+        status: data.status,
+        categoryId: data.categoryId,
+        // CONVERSIÓN DE FECHAS: Vital para que Prisma no explote
+        saleStartDate: data.saleStartDate ? new Date(data.saleStartDate) : new Date(),
+        saleEndDate: data.saleEndDate ? new Date(data.saleEndDate) : null,
       },
     });
   }
