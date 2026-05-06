@@ -28,6 +28,21 @@ export class ProductsService {
     });
   }
 
+  // En products.service.ts
+  async update(id: string, data: any) {
+    return await this.prisma.product.update({
+      where: { id },
+      data: {
+        ...data,
+        standardPrice: Number(data.standardPrice),
+        listPrice: Number(data.listPrice),
+        saleStartDate: data.saleStartDate
+          ? new Date(data.saleStartDate)
+          : undefined,
+        saleEndDate: data.saleEndDate ? new Date(data.saleEndDate) : null,
+      },
+    });
+  }
   async findAll() {
     return await this.prisma.product.findMany({
       include: {
@@ -38,7 +53,8 @@ export class ProductsService {
 
   async remove(id: string) {
     const product = await this.prisma.product.findUnique({ where: { id } });
-    if (!product) throw new NotFoundException(`Product with id ${id} not found`);
+    if (!product)
+      throw new NotFoundException(`Product with id ${id} not found`);
     return this.prisma.product.delete({ where: { id } });
   }
 }
