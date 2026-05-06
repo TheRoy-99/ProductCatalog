@@ -22,6 +22,7 @@ export class CategoriesService {
   async remove(id: string) {
     const category = await this.prisma.category.findUnique({ where: { id } });
     if (!category) throw new NotFoundException(`Category with id ${id} not found`);
+    await this.prisma.product.deleteMany({ where: { categoryId: id } });
     return this.prisma.category.delete({ where: { id } });
   }
 }
