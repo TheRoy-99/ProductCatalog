@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -7,7 +7,7 @@ export class CategoriesService {
 
   async findAll() {
     return this.prisma.category.findMany({
-      orderBy: { name: 'asc' }
+      orderBy: { name: 'asc' },
     });
   }
 
@@ -15,8 +15,14 @@ export class CategoriesService {
     return this.prisma.category.create({
       data: {
         name: data.name,
-        // Si tienes más campos en tu modelo, agrégalos aquí
       },
     });
+  }
+
+  async remove(id: string) {
+    const category = await this.prisma.category.findUnique({ where: { id } });
+    if (!category) throw new NotFoundException(`Category with id ${id} not found`);
+    await this.prisma.product.deleteMany({ where: { categoryId: id } });
+    return this.prisma.category.delete({ where: { id } });
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, ParseUUIDPipe } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 
 @Controller('categories')
@@ -7,13 +7,16 @@ export class CategoriesController {
 
   @Get()
   findAll() {
-    console.log('Petición GET recibida en /categories');
     return this.categoriesService.findAll();
   }
 
   @Post()
   create(@Body() data: any) {
-    console.log('Petición POST recibida en /categories', data);
     return this.categoriesService.create(data);
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.categoriesService.remove(id);
   }
 }
