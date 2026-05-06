@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, ParseUUIDPipe, Patch } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 
 @Controller('categories')
@@ -13,6 +13,11 @@ export class CategoriesController {
   @Post()
   create(@Body() data: any) {
     return this.categoriesService.create(data);
+  }
+
+  @Patch(':id')
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() data: any) {
+    return this.categoriesService.update(id, data);
   }
 
   @Delete(':id')
