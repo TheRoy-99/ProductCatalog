@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 
@@ -20,7 +20,9 @@ export class ProductsService {
         status: data.status,
         categoryId: data.categoryId,
         // CONVERSIÓN DE FECHAS: Vital para que Prisma no explote
-        saleStartDate: data.saleStartDate ? new Date(data.saleStartDate) : new Date(),
+        saleStartDate: data.saleStartDate
+          ? new Date(data.saleStartDate)
+          : new Date(),
         saleEndDate: data.saleEndDate ? new Date(data.saleEndDate) : null,
       },
     });
@@ -32,5 +34,11 @@ export class ProductsService {
         category: true,
       },
     });
+  }
+
+  async remove(id: string) {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+    if (!product) throw new NotFoundException(`Product with id ${id} not found`);
+    return this.prisma.product.delete({ where: { id } });
   }
 }
